@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Results Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --grid: rgba(148, 163, 184, 0.15);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #020617, #111827 35%, #0f172a);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .dashboard {
+      width: min(960px, 100%);
+      background: rgba(17, 24, 39, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    h1 {
+      margin: 0 0 20px;
+      font-size: clamp(24px, 4vw, 38px);
+      letter-spacing: 0.5px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value {
+      margin-top: 8px;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .chart {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 120px 1fr 50px;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .label {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .bar-bg {
+      position: relative;
+      height: 26px;
+      background: rgba(148, 163, 184, 0.12);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+    }
+
+    .bar-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), #34d399);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #062b1d;
+      min-width: 28px;
+    }
+
+    .value {
+      text-align: right;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    @media (max-width: 600px) {
+      .row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .value {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <h1>Test Results Dashboard</h1>
+
+    <div id="summary" class="summary"></div>
+    <div id="chart" class="chart"></div>
+  </div>
+
+  <script>
+    // Example payload
+    const payload = {
+      tests: [
+        { name: "AIO", result: 0 },
+        { name: "CAN", result: 2 }
+      ]
+    };
+
+    function renderDashboard(data) {
+      const tests = Array.isArray(data?.tests) ? data.tests : [];
+      const total = tests.length;
+      const passed = tests.filter(t => Number(t.result) === 0).length;
+      const failed = tests.filter(t => Number(t.result) > 0).length;
+      const max = Math.max(...tests.map(t => Number(t.result) || 0), 1);
+
+      document.getElementById("summary").innerHTML = `
+        <div class="stat">
+          <div class="stat-label">Total</div>
+          <div class="stat-value">${total}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Passed</div>
+          <div class="stat-value">${passed}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Failed</div>
+          <div class="stat-value">${failed}</div>
+        </div>
+      `;
+
+      document.getElementById("chart").innerHTML = tests.map((test) => {
+        const value = Number(test.result) || 0;
+        const percentage = (value / max) * 100;
+        const barColor = value === 0 ? "linear-gradient(90deg, #22c55e, #34d399)" : "linear-gradient(90deg, #f59e0b, #ef4444)";
+        return `
+          <div class="row">
+            <div class="label">${test.name}</div>
+            <div class="bar-bg">
+              <div class="bar-fill" style="width:${Math.max(percentage, 6)}%; background:${barColor};">
+                ${value}
+              </div>
+            </div>
+            <div class="value">${value}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    renderDashboard(payload);
+  </script>
+</body>
+</html>
