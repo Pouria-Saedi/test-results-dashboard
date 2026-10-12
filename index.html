@@ -14,7 +14,6 @@
       --accent: #22c55e;
       --warning: #f59e0b;
       --danger: #ef4444;
-      --grid: rgba(148, 163, 184, 0.15);
     }
 
     * { box-sizing: border-box; }
@@ -104,7 +103,6 @@
       position: absolute;
       left: 0; top: 0; bottom: 0;
       border-radius: 999px;
-      background: linear-gradient(90deg, var(--accent), #34d399);
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -136,14 +134,12 @@
 <body>
   <div class="dashboard">
     <h1>Test Results Dashboard</h1>
-
     <div id="summary" class="summary"></div>
     <div id="chart" class="chart"></div>
   </div>
 
   <script>
-    // Example payload
-    const payload = {
+    const fallbackData = {
       tests: [
         { name: "AIO", result: 0 },
         { name: "CAN", result: 2 }
@@ -190,7 +186,20 @@
       }).join("");
     }
 
-    renderDashboard(payload);
+    const apiUrl = window.TEST_API_URL || "./data.json";
+
+    fetch(apiUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => renderDashboard(data))
+      .catch(() => {
+        console.warn("Using fallback JSON because the API/data.json could not be loaded.");
+        renderDashboard(fallbackData);
+      });
   </script>
 </body>
 </html>
