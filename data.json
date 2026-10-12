@@ -1,0 +1,6 @@
+{
+  "tests": [
+    { "name": "AIO", "result": 0 },
+    { "name": "CAN", "result": 2 }
+  ]
+}
